@@ -2,12 +2,13 @@
 #include <arduino.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <timer_msec_p1.h>
 
 //float sampling_rate = 290e-6; // T_s in seconds (sampiling limit = 280micro s)
 
 
 Encoder encoder(2, 4, 3); // c1 = PD2 (INT0), c2 = PD4, led = pin 3
-// test
+Timer_msec timer;
 
 int main()
 {
@@ -15,6 +16,7 @@ int main()
     Serial.begin(9600);
 
     encoder.init();
+    timer.init(100);
     sei();
 
     int last_position = 0;
@@ -34,4 +36,9 @@ int main()
 ISR(INT0_vect)
 {
   encoder.sample();
+}
+
+ISR(TIMER1_COMPA_vect)
+{
+    // called once per timer period (100 ms); Do something
 }
