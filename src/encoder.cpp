@@ -1,5 +1,6 @@
 #include <encoder.h>
 #include <avr/io.h>
+#include <pwm_setup.h>
 
 void Encoder::init()
 {
@@ -7,6 +8,7 @@ void Encoder::init()
     c2.init();
     led.init();
     timer.init();
+    setupPWM_D5_D6();
 
     EICRA |= (1 << ISC00);  // INT0: trigger on any logical change
     EICRA &= ~(1 << ISC01); 
