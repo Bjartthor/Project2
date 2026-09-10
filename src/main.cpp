@@ -19,9 +19,11 @@ int main()
     while(1){
       //_delay_ms(sampling_rate*1000);
       //encoder.sample(); 
-
-      Serial.println(encoder.get_position());
-      Serial.println(encoder.get_speed_rpm());
+        Serial.print("Postition: ");
+        Serial.println(encoder.get_position());
+        Serial.print("Speed: ");
+        Serial.println(encoder.get_speed_rpm());
+      _delay_ms(1000);
     }
     return 0;
 }
