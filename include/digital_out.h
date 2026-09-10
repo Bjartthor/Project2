@@ -48,7 +48,6 @@ class Digital_out {
             }   
         }
 
-// this is digital_out
         void init() {
             *ddrReg |= pinMask;
         }

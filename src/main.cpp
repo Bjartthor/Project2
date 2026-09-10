@@ -6,7 +6,7 @@
 #include <avr/interrupt.h>
 
 Encoder motor(D2,D3,D4);
-Drive bridge(D5,D6,D7);
+Drive bridge(0,D8);
 
 ISR(INT0_vect) {
   motor.update(); // interrupt update
