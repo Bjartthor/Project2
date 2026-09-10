@@ -38,7 +38,7 @@ int Encoder::get_position()
 
 void Encoder::update_speed()
 {
-    speed_rpm = float(_position - last_position)/700/(float(speed_period)/1000/60);
+    speed_rpm = float(_position - last_position)/1050/(float(speed_period)/1000/60);
     last_position = _position;
 }
 
