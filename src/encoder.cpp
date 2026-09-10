@@ -6,6 +6,7 @@ void Encoder::init()
     c1.init();
     c2.init();
     led.init();
+    timer.init();
 
     EICRA |= (1 << ISC00);  // INT0: trigger on any logical change
     EICRA &= ~(1 << ISC01); 
@@ -30,7 +31,18 @@ void Encoder::sample()
     }
 }
 
-int Encoder::position()
+int Encoder::get_position()
 {
     return _position;
+}
+
+void Encoder::update_speed()
+{
+    speed_rpm = float(_position - last_position)/700/(float(speed_period)/1000/60);
+    last_position = _position;
+}
+
+int Encoder::get_speed_rpm()
+{
+    return speed_rpm;
 }

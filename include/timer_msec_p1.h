@@ -3,6 +3,10 @@
 class Timer_msec
 {
 public:
-    Timer_msec();
-    void init(int period_ms);
+    Timer_msec(int period_ms) : period_ms(period_ms) {}
+
+    void init();
+
+private:
+    int period_ms;
 };
