@@ -1,28 +1,41 @@
 #include "drive.h"
+#include "digital_out.h"
 
-Drive::Drive(int Pfwd_arg, int Prev_arg) {
-    Pfwd = Pfwd_arg;
-    Prev = Prev_arg;
+Drive::Drive(int Pfwd_arg, int Prev_arg, int Pslp_arg) : Pfwd(Pfwd_arg), Prev(Prev_arg), Pslp(Pslp_arg) {
 }
 
 void Drive::init() {
-    gpioSetMode(Pfwd,PI_OUTPUT);
-    gpioSetMode(Prev,PI_OUTPUT);
+    Pfwd.init();
+    Pfwd.set_lo();
+    Prev.init();
+    Prev.set_lo();
+    Pslp.init();
+    Pslp.set_hi();
 }
 
 void Drive::fwd(int speed) {
     int pwmval = (speed*255)/100;
-    gpioWrite(Prev,0);
-    gpioPWM(Pfwd,pwmval);
+    // for later
 }
 
 void Drive::rev(int speed) {
     int pwmval = (speed*255)/100;
-    gpioWrite(Pfwd,0);
-    gpioPWM(Prev,pwmval);
+    // for later
 }
 
 void Drive::stop(void) {
-    gpioPWM(Pfwd,0);
-    gpioPWM(Prev,0);
+    Pfwd.set_lo();
+    Prev.set_lo();
+}
+
+void Drive::sleep() {
+    Pfwd.set_lo();
+    Prev.set_lo();
+    Pslp.set_lo();
+}
+
+void Drive::wake() {
+    Pfwd.set_lo();
+    Prev.set_lo();
+    Pslp.set_hi();   
 }

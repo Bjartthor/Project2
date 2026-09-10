@@ -1,5 +1,5 @@
 #include "encoder.h"
-#include "Arduino.h"
+#include "time.h"
 
 Encoder::Encoder(int pin1, int pin2, int pin_out) 
   : P1(pin1), P2(pin2), Pout(pin_out) 
@@ -44,8 +44,8 @@ int Encoder::position() {
 }
 
 int Encoder::speed() {
-    long delta_ticks = history[0].enc_hist - history[history_length - 1].enc_hist;
-    unsigned long delta_time = history[0].timestamp - history[history_length - 1].timestamp;
+    long delta_ticks = history[0].enc_hist - history[memory_length - 1].enc_hist;
+    unsigned long delta_time = history[0].timestamp - history[memory_length - 1].timestamp;
     if (delta_time == 0) {
         return rpm; 
     }

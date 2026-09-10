@@ -1,40 +1,31 @@
-#include <encoder.h>
-#include <arduino.h>
-#include <util/delay.h>
-#include <avr/interrupt.h>
+#include <Arduino.h>
+#include <avr/io.h>
+#include "digital_out.h"
+#include "encoder.h"
+#include "time.h"
+#include "drive.h"
 
-//float sampling_rate = 290e-6; // T_s in seconds (sampiling limit = 280micro s)
+Encoder motor(2,3,4);
+Drive bridge(5,6,0);
 
-
-Encoder encoder(2, 4, 3, 100); // c1 = PD2 (INT0), c2 = PD4, led = pin 3
-
-int main()
-{
-
-    Serial.begin(9600);
-
-    encoder.init();
-    sei();
-
-    while(1){
-      //_delay_ms(sampling_rate*1000);
-      //encoder.sample(); 
-        Serial.print("Postition: ");
-        Serial.println(encoder.get_position());
-        Serial.print("Speed: ");
-        Serial.println(encoder.get_speed_rpm());
-      _delay_ms(1000);
-    }
-    return 0;
+ISR(INT0_vect) {
+  motor.update(); // interrupt update
 }
 
-ISR(INT0_vect)
-{
-  encoder.sample();
-}
+int main() {
+  init();
+  motor.init();
+  bridge.init();
+  Serial.begin(9600);
 
-ISR(TIMER1_COMPA_vect)
-{
-    // called once per timer period (100 ms); Do something
-    encoder.update_speed();
+  EICRA |= (1 << ISC00);
+  EICRA &= ~(1 << ISC01);
+  EIMSK |= (1 << INT0);
+  sei();
+
+  while (1) {
+    int currpos = motor.position();
+    Serial.println(currpos);
+  }
+  return 0;
 }
