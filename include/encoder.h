@@ -1,31 +1,35 @@
-#include <digital_in.h>
-#include <digital_out.h>
-#include <timer_msec_p1.h>
+#ifndef ENCODER_H
+#define ENCODER_H
+#include <avr/io.h>
+#include "digital_in.h"
+#include "digital_out.h"
+#include "timer_msec.h"
 
 class Encoder {
-    public:
-        Encoder(int pin_c1, int pin_c2, int pin_led, int speed_resolution)
-            : c1(pin_c1), c2(pin_c2), led(pin_led), timer(speed_resolution), speed_period(speed_resolution) {} //constructor
-
-        void init();
-
-        void sample();
-
-        int get_position();
-
-        void update_speed();
-
-        int get_speed_rpm();
-
     private:
-        Digital_in c1;
-        Digital_in c2;
-        Digital_out led;
-        Timer_msec timer;
-
-        volatile int _position = 0;
-        volatile int last_position = 0;
-        int speed_period;
-        volatile int speed_rpm = 0;
-        bool c1_was_lo = true;
+        Digital_in P1;
+        Digital_in P2;
+        Digital_out Pout;
+        int counter;
+        const int rev_res = 700;
+        bool P1prevstate;
+        bool dir;
+        int time
+        struct Enc_memory {
+            int enc_hist;
+            unsigned long timestamp;
+        };
+        static const int memory_length = 3;
+        Enc_memory history[memory_length];
+        unsigned long timeout;
+        float rpm;
+    public:
+        Encoder(int pin1, int pin2, int pin_out); 
+        void init();
+        void update();
+        int position();
+        bool direction();
+        int speed();
 };
+
+#endif

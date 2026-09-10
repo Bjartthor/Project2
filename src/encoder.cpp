@@ -1,48 +1,59 @@
-#include <encoder.h>
-#include <avr/io.h>
+#include "encoder.h"
+#include "Arduino.h"
 
-void Encoder::init()
+Encoder::Encoder(int pin1, int pin2, int pin_out) 
+  : P1(pin1), P2(pin2), Pout(pin_out) 
 {
-    c1.init();
-    c2.init();
-    led.init();
-    timer.init();
-
-    EICRA |= (1 << ISC00);  // INT0: trigger on any logical change
-    EICRA &= ~(1 << ISC01); 
-    EIMSK |= (1 << INT0);   // enable INT0
+    counter = 0;
+    dir = true;
 }
 
-void Encoder::sample()
-{
-    if (c1_was_lo && c1.is_hi()) {
-        c1_was_lo = false;
-        if (c2.is_hi()) {
-            _position++; //clockwise
+void Encoder::init() {
+    P1.init();
+    P2.init();
+    Pout.init();
+    P1prevstate = P1.is_hi();
+}
+
+void Encoder::update() {
+    bool P1currstate = P1.is_hi();
+    if (P1currstate != P1prevstate) {
+        bool P2currstate = P2.is_hi();
+        if (P1currstate != P2currstate) {
+            counter++;
+            dir = true;
+        } else {
+            counter--;
+            dir = false;
         }
-        else {
-            _position--; //counter clockwise
+        P1prevstate = P1currstate;
+        for (int i = memory_length - 1; i > 0; i--) {
+            history[i] = history[i - 1]; 
         }
-        led.set_hi();
-    }
-    else if (c1.is_lo()) {
-        c1_was_lo = true;
-        led.set_lo();
+        history.timestamp[0] = time_ms();
+        history.enc_hist[0] = counter;
     }
 }
 
-int Encoder::get_position()
-{
-    return _position;
+bool Encoder::direction() {
+    return dir;
 }
 
-void Encoder::update_speed()
-{
-    speed_rpm = float(_position - last_position)/700/(float(speed_period)/1000/60);
-    last_position = _position;
+int Encoder::position() {
+    return counter;
 }
 
-int Encoder::get_speed_rpm()
-{
-    return speed_rpm;
+int Encoder::speed() {
+    long delta_ticks = history[0].enc_hist - history[history_length - 1].enc_hist;
+    unsigned long delta_time = history[0].timestamp - history[history_length - 1].timestamp;
+    if (delta_time == 0) {
+        return rpm; 
+    }
+    if (time_ms() - history[0].timestamp > timeout) {
+        rpm = 0;
+        return rpm;
+    } else {
+        rpm = (delta_ticks * 60000.0) / (delta_time * rev_res);
+    }
+    return rpm;
 }
