@@ -1,5 +1,5 @@
 #include "encoder.h"
-#include "time.h"
+#include "timer.h"
 
 Encoder::Encoder(int pin1, int pin2, int pin_out) 
   : P1(pin1), P2(pin2), Pout(pin_out) 
@@ -27,11 +27,11 @@ void Encoder::update() {
             dir = false;
         }
         P1prevstate = P1currstate;
-        for (int i = memory_length - 1; i > 0; i--) {
-            history[i] = history[i - 1]; 
+        for (int i = history_length - 1; i > 0; i--) {
+            enc_memory[i] = enc_memory[i - 1]; 
         }
-        history.timestamp[0] = time_ms();
-        history.enc_hist[0] = counter;
+        enc_memory[0].timestamps = time_ms();
+        enc_memory[0].counter_mem = counter;
     }
 }
 
@@ -44,12 +44,12 @@ int Encoder::position() {
 }
 
 int Encoder::speed() {
-    long delta_ticks = history[0].enc_hist - history[memory_length - 1].enc_hist;
-    unsigned long delta_time = history[0].timestamp - history[memory_length - 1].timestamp;
+    long delta_ticks = enc_memory[0].counter_mem - enc_memory[history_length - 1].counter_mem;
+    unsigned long delta_time = enc_memory[0].timestamps - enc_memory[history_length - 1].timestamps;
     if (delta_time == 0) {
         return rpm; 
     }
-    if (time_ms() - history[0].timestamp > timeout) {
+    if (time_ms() - enc_memory[0].timestamps > timeout) {
         rpm = 0;
         return rpm;
     } else {

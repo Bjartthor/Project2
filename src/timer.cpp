@@ -1,8 +1,10 @@
+#include "timer.h"
 #include "time.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
 volatile unsigned long ms = 0;
+unsigned long period_ms = 1;
 
 void time_init()
 {

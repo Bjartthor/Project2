@@ -3,7 +3,7 @@
 #include <avr/io.h>
 #include "digital_in.h"
 #include "digital_out.h"
-#include "timer_msec.h"
+#include "timer.h"
 
 class Encoder {
     private:
@@ -14,13 +14,12 @@ class Encoder {
         const int rev_res = 700;
         bool P1prevstate;
         bool dir;
-        int time
-        struct Enc_memory {
-            int enc_hist;
-            unsigned long timestamp;
+        struct History {
+            int counter_mem;
+            unsigned long timestamps;
         };
-        static const int memory_length = 3;
-        Enc_memory history[memory_length];
+        static const int history_length = 3;
+        History enc_memory[history_length];
         unsigned long timeout;
         float rpm;
     public:

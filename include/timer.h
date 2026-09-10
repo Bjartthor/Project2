@@ -3,6 +3,6 @@
 
 void time_init();
 
-unsigned long timer();
+unsigned long time_ms();
 
 #endif

@@ -1,9 +1,9 @@
-#include <Arduino.h>
 #include <avr/io.h>
 #include "digital_out.h"
 #include "encoder.h"
-#include "time.h"
+#include "timer.h"
 #include "drive.h"
+#include <avr/interrupt.h>
 
 Encoder motor(2,3,4);
 Drive bridge(5,6,0);
@@ -13,10 +13,9 @@ ISR(INT0_vect) {
 }
 
 int main() {
-  init();
   motor.init();
   bridge.init();
-  Serial.begin(9600);
+  // Serial.begin(9600);
 
   EICRA |= (1 << ISC00);
   EICRA &= ~(1 << ISC01);
@@ -24,8 +23,8 @@ int main() {
   sei();
 
   while (1) {
-    int currpos = motor.position();
-    Serial.println(currpos);
+    // int currpos = motor.position();
+    // Serial.println(currpos);
   }
   return 0;
 }
