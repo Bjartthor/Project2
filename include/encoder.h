@@ -3,7 +3,6 @@
 #include <avr/io.h>
 #include "digital_in.h"
 #include "digital_out.h"
-#include "timer.h"
 
 class Encoder {
     private:

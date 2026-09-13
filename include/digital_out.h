@@ -50,6 +50,7 @@ class Digital_out {
 
         void init() {
             *ddrReg |= pinMask;
+            *portReg &= ~pinMask;
         }
 
         void set_hi() {

@@ -2,8 +2,8 @@
 #include "digital_out.h"
 #include <avr/io.h>
 
-Drive::Drive(int TN_arg, int Pslp_arg) : Pslp(Pslp_arg) {
-    TN = TN_arg;
+Drive::Drive(int timer_circuit_no, int sleep_pin) : Pslp(sleep_pin) {
+    TN = timer_circuit_no;
     if (TN == 0) { //timer 0 (D5 & D6)
         Pfwd = &OCR0B; // Pin D5
         Prev = &OCR0A; // Pin D6
