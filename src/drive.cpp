@@ -62,5 +62,5 @@ void Drive::sleep() {
 void Drive::wake() {
     *Pfwd = 0;
     *Prev = 0;
-    Pslp.set_hi();   
+    Pslp.set_hi();
 }

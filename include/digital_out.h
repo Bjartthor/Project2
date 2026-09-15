@@ -38,11 +38,11 @@ class Digital_out {
                 ddrReg = &DDRD;
                 portReg = &PORTD;
             } else if (pin >= 8 && pin <= 13) {
-                pinMask = (1<< pin);
+                pinMask = (1<< (pin-8));
                 ddrReg = &DDRB;
                 portReg = &PORTB;
             } else if (pin >= 14 && pin <= 19) {
-                pinMask = (1<< pin);
+                pinMask = (1<< (pin-14));
                 ddrReg = &DDRC;
                 portReg = &PORTC;
             }   
