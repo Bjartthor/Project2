@@ -9,25 +9,26 @@ class Encoder {
         Digital_in P1;
         Digital_in P2;
         Digital_out Pout;
-        int counter;
-        const int rev_res = 700;
+        int counter; // bara position
+        const int rev_res = 700; // Steps í einum hring á mótor
         bool P1prevstate;
-        bool dir;
+        bool dir; // true fyrir áfram false fyrir afturábak. Fer samt eftir hvernig maður tengir hvort áttin er hvað
         struct History {
+            // Þetta er til að reikna hraðann, hægt að averagea yfir seinustu X mörg counter steps
             int counter_mem;
             unsigned long timestamps;
         };
-        static const int history_length = 3;
+        static const int history_length = 3; // Averagear hraðann yfir þetta mörg steps
         History enc_memory[history_length];
         unsigned long timeout;
-        float rpm;
+        float rpm; // Reiknuð rpm
     public:
         Encoder(int pin1, int pin2, int pin_out); 
         void init();
-        void update();
-        int position();
-        bool direction();
-        int speed();
+        void update(); // .update() bara til að lesa af encoder, reiknar hraðann í leiðinni
+        int position(); // .position() skilar counter, ekki búinn að setja inn þannig að hann resettar eftir hring
+        bool direction(); // .direction() skilar "bool dir" sem er true/false
+        int speed(); // skilar rpm sem float
 };
 
 #endif

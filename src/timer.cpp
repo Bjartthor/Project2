@@ -17,7 +17,7 @@ void time_init() {
     TCCR1B |= (1 << WGM12); // clears timer on compare match
     TIMSK1 |= (1 << OCIE1A); // set interrupt on compare match
     TCCR1B |= (1 << CS11) | (1 << CS10); // 64 prescaler
-    OCR1A = (uint16_t)((250000UL * period_ms) / 1000) - 1;
+    OCR1A = (uint16_t)((250000UL * period_ms) / 1000) - 1; // Þetta stillir hversu hratt interruptið keyrir, þarf að vera rétt miðað við prescaler
     sei();
 }
 
@@ -38,8 +38,8 @@ void set_loop_ms(uint8_t loop_period) {
 }
 
 ISR(TIMER1_COMPA_vect) {
+    // Þetta er interrupt á timer 1 og keyrir
     ms++;
-
     if (loop_ms > 0) {
         loop_cnt++;
         if (loop_cnt >= loop_ms) {

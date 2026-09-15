@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <avr/io.h>
 
+// .is_hi() og .is_lo() til að nota. Skila bool: true/false
+// Öll þessi #define þýða bara pinnamerkingar yfir í actual númerin á pinnunum
 #define D0 0
 #define D1 1
 #define D2 2
@@ -34,6 +36,7 @@ class Digital_in {
         volatile uint8_t *pinReg;
     public:
         Digital_in(int pin) {
+            // Þetta stillir bara á rétt port og shit
             if (pin <= 7) {
                 pinMask = (1 << pin);
                 ddrReg = &DDRD;
@@ -58,10 +61,12 @@ class Digital_in {
         }
 
         bool is_hi() {
+            // skilar true ef hi, false ef lo
             return (*pinReg & pinMask) != 0;
         }
 
         bool is_lo() {
+            // sama nema öfugt. Þannig séð óþarfi
             return (*pinReg & pinMask) == 0;
         }
 };

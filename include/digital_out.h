@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <avr/io.h>
 
+// allt nokkuð sjálfsagt
+// mjög líkt og digital in
+// .set_hi() .set_lo() og .toggle() til að nota
+
 #define D0 0
 #define D1 1
 #define D2 2

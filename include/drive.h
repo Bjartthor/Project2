@@ -4,6 +4,7 @@
 #include "digital_out.h"
 #include <stdint.h>
 
+
 class Drive {
     private:
         volatile uint8_t *Pfwd;
@@ -17,9 +18,9 @@ class Drive {
         void init(void);
         void fwd(int speed);
         void rev(int speed);
-        void stop(void);
-        void sleep(void);
-        void wake(void);
+        void stop(void); // .stop() stoppar snúning
+        void sleep(void); // .sleep() stoppar snúning og slekkur á driver/brú
+        void wake(void); // .wake() kveikir á driver/brú
 };
 
 #endif
