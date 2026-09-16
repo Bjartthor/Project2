@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include "uart.h"
 #include "timer.h"
@@ -7,9 +8,6 @@
 #include "digital_out.h"
 #include "encoder.h"
 #include "drive.h"
-
-// Þetta er bara til að prenta í serial
-char pos_str[16];
 
 // ónotað, líka ekki réttur time constant
 const float time_constant=0.005;
@@ -36,16 +34,14 @@ Drive bridge(0,D8);
 volatile bool on_off_toggle = false;
 volatile unsigned long antibounce = 0;
 
+int curr_pos = 0;
+
 ISR(INT0_vect) { 
-// Interrupt á pinna D2, keyrir motor update og prentar position í serial ef liðnar eru 100 ms 
-// Prenttímabil er stillt í main() með set_loop_ms();
+// Interrupt á pinna D2
   motor.update();
-  if (timer_loop) {
-    timer_loop = false; // timer_loop
-    sprintf(pos_str, "%d", motor.position());
-    serial_println(pos_str);
-  }
+  curr_pos = motor.position();
 }
+
 ISR(INT1_vect) { 
 // Interrupt á pinna D3, kveikir og slekkur á driver/brú ef D3 fær spennu
 // D3 þarf pulldown resistor í jörð. LED á arduino (L - "pinni D13") sýnir stöðu 
@@ -77,11 +73,12 @@ int main() {
   pinA1.init();
   pinA2.init();
 
-  // Þetta tvennt þarf fyrir D3 interrupt
+  // Þetta þarf fyrir D3 interrupt
   pinD3.init();
-  set_loop_ms(100); // Interrrupt setur timer_loop = true á nkvml 100ms fresti, má vera hvað sem er
   
-  
+  // Þetta er bara til að prenta í serial
+  char print_str[64];
+  char speed_str[10];
 
   //Stilla interrupts, INT0 er f. encoder/D2 & INT1 er fyrir takka/D3
   // INT0 (D2)
@@ -96,6 +93,9 @@ int main() {
 
   pinA1.set_hi();
 
+  set_loop_ms(100); // Interrrupt setur timer_loop = true á nkvml 100ms fresti, má vera hvað sem er
+  
+
   while (1) {
     // Checkar hvort A2 sé hi eða lo til að breyta snúningsátt
     if (on_off_toggle == true) {
@@ -104,6 +104,14 @@ int main() {
       } else {
         bridge.rev(100);
       }
+    }
+    if (timer_loop) {
+      timer_loop = false; // timer_loop
+      dtostrf(motor.speed(), 8, 3, speed_str);
+      sprintf(print_str, "\rPosition: %4d   Speed: %s rpm   Direction: %s", 
+        curr_pos, speed_str, 
+        motor.direction() ? "forward" : "reverse");
+      serial_print(print_str);
     }
   }
     

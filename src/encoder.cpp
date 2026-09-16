@@ -5,6 +5,7 @@ Encoder::Encoder(int pin1, int pin2, int pin_out)
   : P1(pin1), P2(pin2), Pout(pin_out) 
 {
     counter = 0;
+    ext_counter = 0;
     dir = true;
 }
 
@@ -21,9 +22,11 @@ void Encoder::update() {
         bool P2currstate = P2.is_hi();
         if (P1currstate != P2currstate) {
             counter++;
+            ext_counter++;
             dir = true;
         } else {
             counter--;
+            ext_counter--;
             dir = false;
         }
         P1prevstate = P1currstate;
@@ -32,6 +35,10 @@ void Encoder::update() {
         }
         enc_memory[0].timestamps = time_ms();
         enc_memory[0].counter_mem = counter;
+
+    if (ext_counter >= rev_res || -rev_res >= ext_counter) {
+        ext_counter = 0;
+    }
     }
 }
 
@@ -40,10 +47,10 @@ bool Encoder::direction() {
 }
 
 int Encoder::position() {
-    return counter;
+    return ext_counter;
 }
 
-int Encoder::speed() {
+float Encoder::speed() {
     long delta_ticks = enc_memory[0].counter_mem - enc_memory[history_length - 1].counter_mem;
     unsigned long delta_time = enc_memory[0].timestamps - enc_memory[history_length - 1].timestamps;
     if (delta_time == 0) {
