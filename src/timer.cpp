@@ -62,7 +62,7 @@ void set_loop_ms(uint8_t loop_period) {
 }
 
 ISR(TIMER1_COMPA_vect) { // Keyrir þegar TCNT1 == OCR1A, COMPB væri TCNT1 == OCR1B
-    // Þetta er interrupt á timer 1 og keyrir
+    // Þetta er interrupt á timer 1 og telur millisek og passar loop control bool
     ms++;
     if (loop_ms > 0) {
         loop_cnt++;
