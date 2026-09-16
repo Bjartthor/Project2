@@ -18,12 +18,12 @@ class Encoder {
         struct History {
             // Þetta er til að reikna hraðann, hægt að averagea yfir seinustu X mörg counter steps
             volatile int32_t counter_mem;
-            volatile unsigned long timestamps;
+            volatile uint32_t timestamps;
         };
-        static const int history_length = 40; // Averagear hraðann yfir þetta mörg steps
+        static const uint8_t history_length = 40; // Averagear hraðann yfir þetta mörg steps, max 254 eða 255, annaðhvort idk
         History enc_memory[history_length];
-        volatile int history_head = 0;
-        const unsigned long timeout = 100;
+        volatile uint8_t history_head = 0; 
+        const uint32_t timeout = 100000; // microsek, fyrir .speed() 
         float rpm; // Reiknuð rpm
     public:
         Encoder(int pin1, int pin2, int pin_out); 

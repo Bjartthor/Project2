@@ -37,7 +37,7 @@ void Encoder::update() {
         if (history_head >= history_length) {
             history_head=0;
         }
-        enc_memory[history_head].timestamps = time_ms();
+        enc_memory[history_head].timestamps = time_mus();
         enc_memory[history_head].counter_mem = counter;
 
     if (ext_counter >= rev_res || -rev_res >= ext_counter) {
@@ -66,20 +66,20 @@ float Encoder::speed() {
         }
         int32_t new_pos = enc_memory[head].counter_mem;
         int32_t old_pos = enc_memory[tail].counter_mem;
-        unsigned long new_time = enc_memory[head].timestamps;
-        unsigned long old_time = enc_memory[tail].timestamps;
+        uint32_t new_time = enc_memory[head].timestamps;
+        uint32_t old_time = enc_memory[tail].timestamps;
     sei();
 
     int32_t delta_pos = new_pos - old_pos;
-    unsigned long delta_time = new_time - old_time;
+    uint32_t delta_time = new_time - old_time;
     if (delta_time == 0) {
         return rpm; 
     }
-    if (time_ms() - new_time > timeout) {
+    if (time_mus() - new_time > timeout) {
         rpm = 0;
         return rpm;
     } else {
-        rpm = (delta_pos * 60000.0) / (delta_time * rev_res);
+        rpm = (delta_pos * 60000000.0) / (delta_time * rev_res);
     }
     return rpm;
 }
