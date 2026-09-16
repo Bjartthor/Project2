@@ -15,10 +15,10 @@ const float time_constant=0.005;
 
 // Digital_out & Digital_in taka núna á móti merkingunum á pinnunum. S.S. það sem stendur á arduinoinu sjálfu
 // Setur á rétt port sjálft. Annars eru klassarnir eins nema engin .cpp files, allt í .h
-Digital_out LED(D13);
-Digital_out pinA1(A1);
-Digital_in pinA2(A2);
-Digital_in pinD3(D3);
+Digital_out LED(D13); // innbyggða led-ið á arduinóinu
+Digital_out pinA1(A1); // nota fyrir A2 & D3
+Digital_in pinA2(A2); // les af rofa sem stjórnar átt
+Digital_in pinD3(D3); // interrupt á D3 kveikir og slekkur á DRV8833 driver/Drive bridge(0,D8) og LED
 
 // Encoder & Drive taka líka á móti merkingunum á pinnum. #define línur þýða "D4" (t.d.) í rétt númer
 
@@ -26,19 +26,19 @@ Digital_in pinD3(D3);
 // (encoder output 1, encoder output 2, þessi er output pinni en gerir ekki neitt eins og er)
 Encoder motor(D2,D4,D7);
 
-// Þessi tekur: (timer númer, sleep pinni til að kveikja og slökkva)
+// Þessi tekur: (timer númer (0 eða 2), sleep pinni til að kveikja og slökkva)
 // það eru til 3 timerar, timer 0, timer 1 og timer 2. Timer 1 er aðeins öðruvísi og er notaður í timer.cpp s.s. ekki nota
 // Stendur í drive.cpp hvaða pinnar eru fwd or reverse fyrir hvaða timera
 Drive bridge(0,D8);
 
 // Drasl fyrir takkann/D3 interrupt
 volatile bool on_off_toggle = false;
-volatile unsigned long antibounce = 0;
+volatile uint32_t antibounce = 0;
 
 int16_t curr_pos = 0;
 
 ISR(INT0_vect) { 
-// Interrupt á pinna D2
+// Interrupt á pinna D2/encoder
   motor.update();
   curr_pos = motor.position();
 }
@@ -46,7 +46,7 @@ ISR(INT0_vect) {
 ISR(INT1_vect) { 
 // Interrupt á pinna D3, kveikir og slekkur á driver/brú ef D3 fær spennu
 // D3 þarf pulldown resistor í jörð. LED á arduino (L - "pinni D13") sýnir stöðu 
-  if ((time_ms() - antibounce) > 250UL) {
+  if ((time_ms() - antibounce) > 250UL) { // Lætur hann bara geta activatast á 250ms fresti
     LED.toggle();
     on_off_toggle = !on_off_toggle;
     antibounce = time_ms();
@@ -65,7 +65,8 @@ int main() {
   motor.init(); 
 
   // Þetta initializar sleep pinnan sem Digital_out og gerir .set_lo
-  // þarf að gera .wake() til að kveikva á driver/bru
+  // þarf að gera .wake() til að kveikva á driver/brú
+
   bridge.init(); 
 
   LED.init();
@@ -107,8 +108,8 @@ int main() {
     }
     if (timer_loop) {
       timer_loop = false; // timer_loop
-      dtostrf(motor.speed(), 8, 3, speed_str);
-      sprintf(print_str, "\rPosition: %4d   Speed: %s rpm   Direction: %s", 
+      dtostrf(motor.speed(), 8, 3, speed_str); // breytir float í string: "XXXXX.XXX"
+      sprintf(print_str, "\rPosition: %4d   Speed: %s rpm   Direction: %s", // "\r" í byrjun lætur þetta prenta aftur og aftur í efstu línu
         curr_pos, speed_str, 
         motor.direction() ? "forward" : "reverse");
       serial_print(print_str);
