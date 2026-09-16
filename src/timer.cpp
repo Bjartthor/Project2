@@ -37,6 +37,8 @@ uint32_t time_ms() {
 }
 
 uint32_t time_mus() {
+    // Skilar mícrosek með að lesa beint af TCNT1 og bæta við ms
+    // nákvæmni 4 míkrósek útaf prescaler samt
     uint8_t oldSREG = SREG; // interrupt state save
     cli(); // disable interrupts
         uint32_t current_ms = ms;
@@ -49,7 +51,7 @@ uint32_t time_mus() {
             current_ms++;
         }
     SREG = oldSREG; // interrupt state restore
-    return current_ms*1000UL + tcnt1_read*4UL;
+    return current_ms*1000UL + tcnt1_read*4UL; // millisek * 1000 + TCNT1 * 4 = mícrósek
 }
 
 void set_loop_ms(uint8_t loop_period) {
