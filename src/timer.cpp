@@ -25,7 +25,7 @@ unsigned long time_ms() {
     unsigned long current_ms;
     uint8_t oldSREG = SREG; // interrupt state save
     cli(); // disable interrupts
-    current_ms = ms;
+        current_ms = ms;
     SREG = oldSREG; // interrupt state restore
     return current_ms;
 }
@@ -33,7 +33,7 @@ unsigned long time_ms() {
 void set_loop_ms(uint8_t loop_period) {
     uint8_t oldSREG = SREG; // interrupt state save
     cli(); // disable interrupts
-    loop_ms = loop_period;
+        loop_ms = loop_period;
     SREG = oldSREG; // interrupt state restore
 }
 

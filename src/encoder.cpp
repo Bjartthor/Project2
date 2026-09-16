@@ -1,5 +1,7 @@
 #include "encoder.h"
 #include "timer.h"
+#include <avr/interrupt.h>
+#include <stdint.h>
 
 Encoder::Encoder(int pin1, int pin2, int pin_out) 
   : P1(pin1), P2(pin2), Pout(pin_out) 
@@ -30,11 +32,13 @@ void Encoder::update() {
             dir = false;
         }
         P1prevstate = P1currstate;
-        for (int i = history_length - 1; i > 0; i--) {
-            enc_memory[i] = enc_memory[i - 1]; 
+
+        history_head++;
+        if (history_head >= history_length) {
+            history_head=0;
         }
-        enc_memory[0].timestamps = time_ms();
-        enc_memory[0].counter_mem = counter;
+        enc_memory[history_head].timestamps = time_ms();
+        enc_memory[history_head].counter_mem = counter;
 
     if (ext_counter >= rev_res || -rev_res >= ext_counter) {
         ext_counter = 0;
@@ -46,21 +50,36 @@ bool Encoder::direction() {
     return dir;
 }
 
-int Encoder::position() {
-    return ext_counter;
+int16_t Encoder::position() {
+    cli();
+        int16_t val = ext_counter;
+    sei();
+    return val;
 }
 
 float Encoder::speed() {
-    long delta_ticks = enc_memory[0].counter_mem - enc_memory[history_length - 1].counter_mem;
-    unsigned long delta_time = enc_memory[0].timestamps - enc_memory[history_length - 1].timestamps;
+    cli(); //stoppa interrupts til að copya >8 bit vals
+        int head = history_head;
+        int tail = head + 1;
+        if (tail >= history_length) {
+            tail = 0;
+        }
+        int32_t new_pos = enc_memory[head].counter_mem;
+        int32_t old_pos = enc_memory[tail].counter_mem;
+        unsigned long new_time = enc_memory[head].timestamps;
+        unsigned long old_time = enc_memory[tail].timestamps;
+    sei();
+
+    int32_t delta_pos = new_pos - old_pos;
+    unsigned long delta_time = new_time - old_time;
     if (delta_time == 0) {
         return rpm; 
     }
-    if (time_ms() - enc_memory[0].timestamps > timeout) {
+    if (time_ms() - new_time > timeout) {
         rpm = 0;
         return rpm;
     } else {
-        rpm = (delta_ticks * 60000.0) / (delta_time * rev_res);
+        rpm = (delta_pos * 60000.0) / (delta_time * rev_res);
     }
     return rpm;
 }

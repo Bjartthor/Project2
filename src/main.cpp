@@ -2,6 +2,7 @@
 #include <avr/interrupt.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include "uart.h"
 #include "timer.h"
 #include "digital_in.h"
@@ -34,7 +35,7 @@ Drive bridge(0,D8);
 volatile bool on_off_toggle = false;
 volatile unsigned long antibounce = 0;
 
-int curr_pos = 0;
+int16_t curr_pos = 0;
 
 ISR(INT0_vect) { 
 // Interrupt á pinna D2
@@ -75,10 +76,6 @@ int main() {
 
   // Þetta þarf fyrir D3 interrupt
   pinD3.init();
-  
-  // Þetta er bara til að prenta í serial
-  char print_str[64];
-  char speed_str[10];
 
   //Stilla interrupts, INT0 er f. encoder/D2 & INT1 er fyrir takka/D3
   // INT0 (D2)
@@ -95,6 +92,9 @@ int main() {
 
   set_loop_ms(100); // Interrrupt setur timer_loop = true á nkvml 100ms fresti, má vera hvað sem er
   
+  // Þetta er bara til að prenta í serial
+  char print_str[64];
+  char speed_str[10];
 
   while (1) {
     // Checkar hvort A2 sé hi eða lo til að breyta snúningsátt
