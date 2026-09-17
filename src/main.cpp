@@ -55,10 +55,10 @@ int main() {
   EIMSK |= (1 << INT1);
   
   sei();
-
+  serial_print("\n\n\n----START----\n");
   set_loop_ms(10); // Interrrupt setur timer_loop = true á nkvml 100ms fresti, má vera hvað sem er
   bridge.wake();
-  bridge.rev(100);
+  bridge.fwd(100);
 
   while(stop_flag == false) {
 
@@ -81,13 +81,13 @@ int main() {
 
   for (uint16_t i = 0; i < recordlength; i++) {
     dtostrf(Record_run[i].speedrecord, 8, 3, speed_str); // breytir float í string: "XXXXX.XXX"
-    sprintf(print_str, "Position:%4d    Speed(rpm):%s   Time(us):%lu\n", // "\r" í byrjun lætur þetta prenta aftur og aftur í efstu línu
-      Record_run[i].posrecord,
-      speed_str,
-      Record_run[i].timerecord);
+    sprintf(print_str, "%4d,%s,%lu\n", 
+    Record_run[i].posrecord, 
+    speed_str, 
+    Record_run[i].timerecord);
     serial_print(print_str);
   }
-
+  serial_print("----END----\n");
   LED.set_hi();
   while (stop_flag == true);
   return 0;
