@@ -6,9 +6,11 @@
 
 //float sampling_rate = 290e-6; // T_s in seconds (sampiling limit = 280micro s)
 
-
-Encoder encoder(2, 4, 3, 50); // c1 = PD2 (INT0), c2 = PD4, led = pin 3
-
+int speed_time_ms = 5;
+Encoder encoder(2, 4, 3, speed_time_ms); // c1 = PD2 (INT0), c2 = PD4, led = pin 3
+int time_counter = 0;
+int last_pos = 0;
+int now_pos = 0; 
 bool has_printed = false;
 int main()
 {
@@ -27,7 +29,8 @@ int main()
         //Serial.println(encoder.get_position());
         //Serial.print("Speed: ");
       //Serial.println(encoder.get_speed_rpm());
-      _delay_ms(1000);
+
+      //_delay_ms(1000);
     }
     return 0;
 }
@@ -39,6 +42,19 @@ ISR(INT0_vect)
 
 ISR(TIMER1_COMPA_vect)
 {
-    // called once per timer period (100 ms)
+    // called once per timer period (50 ms)
     encoder.update_speed();
+    now_pos = encoder.get_position();
+    if (last_pos != now_pos)
+    {
+      time_counter++;
+      last_pos = now_pos;
+    }
+    if (!has_printed && encoder.get_speed_rpm() >= 0.63f * 98) {
+      Serial.print("Tau in milli seconds: ");
+      Serial.println(time_counter*speed_time_ms);
+      has_printed = true;
+      }
+    
+
 }
