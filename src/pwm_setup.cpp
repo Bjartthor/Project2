@@ -6,7 +6,7 @@ void setupPWM_D5_D6() {
     // 1. Set pins D5 (PD5) and D6 (PD6) as outputs
     DDRD |= (1 << DDD5) | (1 << DDD6) | (1 << DDD7);
 
-    // turn off sleep
+    // turn off sleep on H-bridge driver
     PORTD |= (1 << PORTD7);
     
     // 2. Set Timer 0 to Fast PWM Mode
@@ -22,9 +22,11 @@ void setupPWM_D5_D6() {
 // Control D6 speed (0 to 255)
 void setSpeedD6(uint8_t dutyCycle) {
     OCR0A = dutyCycle; 
+    OCR0B = 0;
 }
 
 // Control D5 speed (0 to 255)
 void setSpeedD5(uint8_t dutyCycle) {
-    OCR0B = dutyCycle; 
+    OCR0B = dutyCycle;
+    OCR0A = 0; 
 }
