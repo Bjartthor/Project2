@@ -10,75 +10,42 @@
 #include "encoder.h"
 #include "drive.h"
 
-// ónotað, líka ekki réttur time constant
-const float time_constant=0.005;
+Digital_out LED(D13);
+Digital_in pinD3(D3); // interrupt
 
-// Digital_out & Digital_in taka núna á móti merkingunum á pinnunum. S.S. það sem stendur á arduinoinu sjálfu
-// Setur á rétt port sjálft. Annars eru klassarnir eins nema engin .cpp files, allt í .h
-Digital_out LED(D13); // innbyggða led-ið á arduinóinu
-Digital_out pinA1(A1); // nota fyrir A2 & D3
-Digital_in pinA2(A2); // les af rofa sem stjórnar átt
-Digital_in pinD3(D3); // interrupt á D3 kveikir og slekkur á DRV8833 driver/Drive bridge(0,D8) og LED
-
-// Encoder & Drive taka líka á móti merkingunum á pinnum. #define línur þýða "D4" (t.d.) í rétt númer
-
-// Encoder tekur input í röð: 
-// (encoder output 1, encoder output 2, þessi er output pinni en gerir ekki neitt eins og er)
 Encoder motor(D2,D4,D7);
 
-// Þessi tekur: (timer númer (0 eða 2), sleep pinni til að kveikja og slökkva)
-// það eru til 3 timerar, timer 0, timer 1 og timer 2. Timer 1 er aðeins öðruvísi og er notaður í timer.cpp s.s. ekki nota
-// Stendur í drive.cpp hvaða pinnar eru fwd or reverse fyrir hvaða timera
 Drive bridge(0,D8);
 
-// Drasl fyrir takkann/D3 interrupt
-volatile bool on_off_toggle = false;
-volatile uint32_t antibounce = 0;
-
-int16_t curr_pos = 0;
+struct record {
+  int16_t posrecord;
+  float speedrecord;
+  uint32_t timerecord;
+};
 
 ISR(INT0_vect) { 
-// Interrupt á pinna D2/encoder
   motor.update();
-  curr_pos = motor.position();
 }
 
 ISR(INT1_vect) { 
-// Interrupt á pinna D3, kveikir og slekkur á driver/brú ef D3 fær spennu
-// D3 þarf pulldown resistor í jörð. LED á arduino (L - "pinni D13") sýnir stöðu 
-  if ((time_ms() - antibounce) > 250UL) { // Lætur hann bara geta activatast á 250ms fresti
-    LED.toggle();
-    on_off_toggle = !on_off_toggle;
-    antibounce = time_ms();
-    if (on_off_toggle == true) {
-      bridge.wake();
-    } else {
-      bridge.stop();
-      bridge.sleep();
-    }
-  }
+
 }
 
 int main() {
-  time_init(); // timer driver notar ekki klassa. Þarf bara keyra þessa línu einu sinni
-  serial_init(); // fyrir serial print
+  time_init();
+  serial_init();
   motor.init(); 
-
-  // Þetta initializar sleep pinnan sem Digital_out og gerir .set_lo
-  // þarf að gera .wake() til að kveikva á driver/brú
-
   bridge.init(); 
 
   LED.init();
-
-  // nota þessa með rofa til að flippa átt á mótor. A2 er input A1 er output alltaf .set_hi, nota A1 líka fyrir D3 interrupt
-  pinA1.init();
-  pinA2.init();
-
-  // Þetta þarf fyrir D3 interrupt
+  LED.set_lo();
   pinD3.init();
 
-  //Stilla interrupts, INT0 er f. encoder/D2 & INT1 er fyrir takka/D3
+  static const uint16_t recordlength = 120;
+  uint16_t recordhead = 0;
+  record Record_run[recordlength];
+  bool stop_flag = false;
+
   // INT0 (D2)
   EICRA |= (1 << ISC00);
   EICRA &= ~(1 << ISC01);
@@ -89,32 +56,39 @@ int main() {
   
   sei();
 
-  pinA1.set_hi();
+  set_loop_ms(10); // Interrrupt setur timer_loop = true á nkvml 100ms fresti, má vera hvað sem er
+  bridge.wake();
+  bridge.rev(100);
 
-  set_loop_ms(100); // Interrrupt setur timer_loop = true á nkvml 100ms fresti, má vera hvað sem er
-  
-  // Þetta er bara til að prenta í serial
+  while(stop_flag == false) {
+
+    if (timer_loop == true) {
+      timer_loop = false;
+      Record_run[recordhead].posrecord = motor.position();
+      Record_run[recordhead].speedrecord = motor.speed();
+      Record_run[recordhead].timerecord = time_mus();
+      recordhead++;
+    }
+    if (recordhead >= recordlength) {
+      stop_flag = true;
+    }
+  }
+
+  bridge.sleep();
+
   char print_str[64];
   char speed_str[10];
 
-  while (1) {
-    // Checkar hvort A2 sé hi eða lo til að breyta snúningsátt
-    if (on_off_toggle == true) {
-      if (pinA2.is_hi() == true) {
-        bridge.fwd(100);
-      } else {
-        bridge.rev(100);
-      }
-    }
-    if (timer_loop) {
-      timer_loop = false; // timer_loop
-      dtostrf(motor.speed(), 8, 3, speed_str); // breytir float í string: "XXXXX.XXX"
-      sprintf(print_str, "\rPosition: %4d   Speed: %s rpm   Direction: %s", // "\r" í byrjun lætur þetta prenta aftur og aftur í efstu línu
-        curr_pos, speed_str, 
-        motor.direction() ? "forward" : "reverse");
-      serial_print(print_str);
-    }
+  for (uint16_t i = 0; i < recordlength; i++) {
+    dtostrf(Record_run[i].speedrecord, 8, 3, speed_str); // breytir float í string: "XXXXX.XXX"
+    sprintf(print_str, "Position:%4d    Speed(rpm):%s   Time(us):%lu\n", // "\r" í byrjun lætur þetta prenta aftur og aftur í efstu línu
+      Record_run[i].posrecord,
+      speed_str,
+      Record_run[i].timerecord);
+    serial_print(print_str);
   }
-    
+
+  LED.set_hi();
+  while (stop_flag == true);
   return 0;
 }
