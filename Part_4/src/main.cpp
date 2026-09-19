@@ -15,9 +15,9 @@ Encoder motor(D2,D4,D7); // encoder driver, (encoder in 1, encoder in 2, signal 
 
 Drive bridge(0,D8); // motor driver, (timer circuit no., slp pin)
 
-// Digital_out timerpin(A1); // pin for tracking main loop frequency on oscilloscope
+// Digital_out timerpin(A1); // pin for tracking control loop frequency on oscilloscope
 
-struct record {
+struct record { // struct for bulk printing recorded values AFTER program run
   double speedrecord;
   uint16_t timerecord;
   uint8_t pwmmem;
@@ -28,19 +28,18 @@ uint16_t recordhead = 0;
 record Record_run[recordlength];
 bool stop_flag = false;
 
-ISR(INT0_vect) { 
+ISR(INT0_vect) {  // D2 interrupt, INT0 activated by digital_in through encoder class
   motor.update(); // reads position and timestamps on encoder in pin interrupt
 }
-
 
 int main() {
   time_init(); // initalize timer 1 for time tracking use
   serial_init(); // initialize serial comms
-  motor.init();  // initalize encoder driver
-  bridge.init();  // initalize encoder
-  // timerpin.init();
-  bridge.wake();
-  bridge.rev(255);
+  motor.init();  // initalize encoder
+  bridge.init();  // initalize motor driver
+  bridge.wake(); // set slp pin hi
+  bridge.rev(255); // set motor to 100% duty cycle
+  // timerpin.init(); // configures control loop signal pin as output
 
   set_loop_ms(5,20); // sets loop durations in ms, one for controller loop other for serial print
   uint16_t target = 50; // target rpm
@@ -48,32 +47,34 @@ int main() {
   P_controller P(Kp); // construct controller class
   double u; // variable for receiving controller output
   uint8_t pwm = 0; // variable to translate countroller output (double) to motor driver input (unsigned 8 bit)
-  // char print_str[64];
-  // char speed_str[7];
-  
-
   
   sei();
   uint16_t timetrack = 0;
   double currspeed = 0;
   
-  
+  char print_str[64];
+  char speed_str[10];
+
   while (stop_flag == false) {
     if (loop1 == true) {
       loop1 = false;
       // timerpin.toggle(); // for time accuracy validation with oscilloscope
       currspeed = motor.speed();
       u = P.update(target,currspeed);
-      if ((u > 254.0) || (u < -254.0)) {
-        pwm = 254;
+
+      if ((u > 255.0) || (u < -255.0)) {
+        // clamps pwm in 8 bit range
+        pwm = 255;
       } else {
         if (u < 0) {
+          // in case of negative u/overshoot, motor driver only takes unsigned
           pwm = (uint8_t)(-1.0*u);
         } else {
           pwm = (uint8_t)u;
         }
       }
       if (u <= 0) {
+        // simply stops the motor incase of overshoot, reversing performs poorly
         pwm = 0;
         bridge.stop();
       }  else {
@@ -83,6 +84,8 @@ int main() {
 
     if (loop2 == true) {
       loop2 = false;
+      // circular ring buffer struct to record data during runs for bulk print
+      // instead of disruptive constant printing for response plots
         Record_run[recordhead].speedrecord = currspeed;
         Record_run[recordhead].timerecord = timetrack*20;
         Record_run[recordhead].pwmmem = pwm;
@@ -91,17 +94,21 @@ int main() {
         if (recordhead >= recordlength) {
           stop_flag = true;
         }
-      }
-  }
+    }
+
+    // Alternative periodic print
+    // if (loop2 == true) {
+    //   loop2 = false;
     //   dtostrf(motor.speed(), 7, 3, speed_str);
     //   sprintf(print_str,"\rTarget speed: %d rpm    True speed: %s rpm    PWM: %3d        ",
     //     target,speed_str, pwm);
     //   serial_println(print_str);
+    // }
+  }
 
-  bridge.sleep();
-  char print_str[64];
-  char speed_str[10];
+  bridge.sleep(); // sets pwm to 0 and slp pin low
 
+  // struct printing, output can be copied into a .csv file
   for (uint16_t i = 0; i < recordlength; i++) {
     dtostrf(Record_run[i].speedrecord, 8, 3, speed_str); // breytir float í string: "XXXXX.XXX"
     sprintf(print_str, "%s,%d,%d\n", speed_str,Record_run[i].timerecord,Record_run[i].pwmmem);
