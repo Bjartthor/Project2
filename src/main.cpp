@@ -42,19 +42,7 @@ ISR(INT0_vect)
 
 ISR(TIMER1_COMPA_vect)
 {
-    // called once per timer period (50 ms)
+    // called once per timer period (speed_time_ms ms)
     encoder.update_speed();
-    now_pos = encoder.get_position();
-    if (last_pos != now_pos)
-    {
-      time_counter++;
-      last_pos = now_pos;
-    }
-    if (!has_printed && encoder.get_speed_rpm() >= 0.63f * 98) {
-      Serial.print("Tau in milli seconds: ");
-      Serial.println(time_counter*speed_time_ms);
-      has_printed = true;
-      }
-    
 
 }
