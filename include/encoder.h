@@ -24,14 +24,14 @@ class Encoder {
         History enc_memory[history_length];
         volatile uint8_t history_head = 0; 
         const uint32_t timeout = 100000; // microsek, fyrir .speed() 
-        float rpm; // Reiknuð rpm
+        double rpm; // Reiknuð rpm
     public:
         Encoder(int pin1, int pin2, int pin_out); 
         void init();
         void update(); // .update() bara til að lesa af encoder, reiknar hraðann í leiðinni
         int16_t position(); // .position() skilar counter, ekki búinn að setja inn þannig að hann resettar eftir hring
         bool direction(); // .direction() skilar "bool dir" sem er true/false
-        float speed(); // skilar rpm sem float
+        double speed(); // skilar rpm sem double
 };
 
 #endif

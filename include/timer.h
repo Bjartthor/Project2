@@ -7,8 +7,9 @@ uint32_t time_ms();
 
 uint32_t time_mus();
 
-void set_loop_ms(uint8_t loop_period);
+void set_loop_ms(uint8_t loop1_arg, uint16_t loop2_arg);
 
-extern volatile bool timer_loop;
+extern volatile bool loop1;
+extern volatile bool loop2;
 
 #endif

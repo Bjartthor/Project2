@@ -57,7 +57,7 @@ int16_t Encoder::position() {
     return val;
 }
 
-float Encoder::speed() {
+double Encoder::speed() {
     cli(); //stoppa interrupts til að copya >8 bit vals
         int head = history_head;
         int tail = head + 1;

@@ -5,9 +5,12 @@
 
 volatile uint32_t ms = 0;
 
-volatile bool timer_loop = false;
-uint8_t loop_ms=0;
-uint8_t loop_cnt=0;
+volatile bool loop1 = false;
+volatile bool loop2 = false;
+uint8_t loop1_ms=0;
+uint8_t loop1_cnt=0;
+uint16_t loop2_ms=0;
+uint16_t loop2_cnt=0;
 
 void time_init() {
     TCCR1A = 0; // Timer 1 control register A (set to 0)
@@ -29,7 +32,7 @@ void time_init() {
 }
 
 uint32_t time_ms() {
-    uint8_t oldSREG = SREG; // interrupt state save
+    uint8_t oldSREG = SREG; // interrupt state save, betra vs sei() ef þetta er keyrt milli cli(); og sei(); annarstaðar
     cli(); // disable interrupts
         uint32_t current_ms = ms;
     SREG = oldSREG; // interrupt state restore
@@ -54,21 +57,27 @@ uint32_t time_mus() {
     return current_ms*1000UL + tcnt1_read*4UL; // millisek * 1000 + TCNT1 * 4 = mícrósek
 }
 
-void set_loop_ms(uint8_t loop_period) {
-    uint8_t oldSREG = SREG; // interrupt state save
+void set_loop_ms(uint8_t loop1_arg, uint16_t loop2_arg) {
     cli(); // disable interrupts
-        loop_ms = loop_period;
-    SREG = oldSREG; // interrupt state restore
+    loop1_ms = loop1_arg;
+    loop2_ms = loop2_arg;
 }
 
 ISR(TIMER1_COMPA_vect) { // Keyrir þegar TCNT1 == OCR1A, COMPB væri TCNT1 == OCR1B
     // Þetta er interrupt á timer 1 og telur millisek og passar loop control bool
     ms++;
-    if (loop_ms > 0) {
-        loop_cnt++;
-        if (loop_cnt >= loop_ms) {
-            timer_loop = true;
-            loop_cnt = 0;
+    if (loop1_ms > 0) {
+        loop1_cnt++;
+        if (loop1_cnt >= loop1_ms) {
+            loop1 = true;
+            loop1_cnt = 0;
+        }
+    }
+    if (loop2_ms > 0) {
+        loop2_cnt++;
+        if (loop2_cnt >= loop2_ms) {
+            loop2 = true;
+            loop2_cnt = 0;
         }
     }
 }

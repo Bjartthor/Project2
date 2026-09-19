@@ -9,86 +9,68 @@
 #include "digital_out.h"
 #include "encoder.h"
 #include "drive.h"
-
-Digital_out LED(D13);
-Digital_in pinD3(D3); // interrupt
+#include "P_controller.h"
 
 Encoder motor(D2,D4,D7);
 
 Drive bridge(0,D8);
 
-struct record {
-  int16_t posrecord;
-  float speedrecord;
-  uint32_t timerecord;
-};
+double Kp = 2;
+P_controller P(Kp);
 
 ISR(INT0_vect) { 
   motor.update();
-}
-
-ISR(INT1_vect) { 
-
 }
 
 int main() {
   time_init();
   serial_init();
   motor.init(); 
-  bridge.init(); 
+  bridge.init();
+  set_loop_ms(6,500);
 
-  LED.init();
-  LED.set_lo();
-  pinD3.init();
-
-  static const uint16_t recordlength = 120;
-  uint16_t recordhead = 0;
-  record Record_run[recordlength];
-  bool stop_flag = false;
+  uint16_t target = 75; // target rpm
+  double u;
+  uint8_t pwm;
+  char print_str[64];
+  char speed_str[10];
+  
+  bridge.wake();
 
   // INT0 (D2)
   EICRA |= (1 << ISC00);
   EICRA &= ~(1 << ISC01);
   EIMSK |= (1 << INT0);
-  // INT1 (D3)
-  EICRA |= (1 << ISC11) | (1 << ISC10); 
-  EIMSK |= (1 << INT1);
-  
   sei();
-  serial_print("\n\n\n----START----\n");
-  set_loop_ms(10); // Interrrupt setur timer_loop = true á nkvml 100ms fresti, má vera hvað sem er
-  bridge.wake();
-  bridge.fwd(100);
 
-  while(stop_flag == false) {
+  bridge.rev(5);
 
-    if (timer_loop == true) {
-      timer_loop = false;
-      Record_run[recordhead].posrecord = motor.position();
-      Record_run[recordhead].speedrecord = motor.speed();
-      Record_run[recordhead].timerecord = time_mus();
-      recordhead++;
+  while (1) {
+
+    if (loop1 == true) {
+      loop1 = false;
+      u = P.update(target,motor.speed());
+      if ((u > 100.0) || (u < -100.0)) {
+        pwm = 100;
+      } else {
+        if (u < 0) {
+          pwm = (uint8_t)(-1.0*u);
+        } else {
+          pwm = (uint8_t)u;
+        }
+        
+      }
+      if (u <= 0) {
+        bridge.stop();
+      }  else {
+        bridge.fwd(pwm);
+      }
     }
-    if (recordhead >= recordlength) {
-      stop_flag = true;
+    if (loop2 == true) {
+      loop2 = false;
+      dtostrf(motor.speed(), 8, 3, speed_str);
+      sprintf(print_str,"Target speed: %d    True speed: %s\n",target,speed_str);
+      serial_print(print_str);
     }
   }
-
-  bridge.sleep();
-
-  char print_str[64];
-  char speed_str[10];
-
-  for (uint16_t i = 0; i < recordlength; i++) {
-    dtostrf(Record_run[i].speedrecord, 8, 3, speed_str); // breytir float í string: "XXXXX.XXX"
-    sprintf(print_str, "%4d,%s,%lu\n", 
-    Record_run[i].posrecord, 
-    speed_str, 
-    Record_run[i].timerecord);
-    serial_print(print_str);
-  }
-  serial_print("----END----\n");
-  LED.set_hi();
-  while (stop_flag == true);
-  return 0;
 }

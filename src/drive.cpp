@@ -1,8 +1,9 @@
 #include "drive.h"
 #include "digital_out.h"
 #include <avr/io.h>
+#include <stdint.h>
 
-Drive::Drive(int timer_circuit_no, int sleep_pin) : Pslp(sleep_pin) {
+Drive::Drive(uint8_t timer_circuit_no, uint8_t sleep_pin) : Pslp(sleep_pin) {
     TN = timer_circuit_no;
     if (TN == 0) { //timer 0 (D5 & D6)
         Pfwd = &OCR0B; // Pin D5
@@ -36,15 +37,15 @@ void Drive::init() {
     *Prev = 0;
 }
 
-void Drive::fwd(int speed) {
+void Drive::fwd(uint16_t speed) {
     *Prev = 0;
-    int pwmval = (speed*255)/100;
+    uint16_t pwmval = (speed*255)/100;
     *Pfwd = pwmval;
 }
 
-void Drive::rev(int speed) {
+void Drive::rev(uint16_t speed) {
     *Pfwd = 0;
-    int pwmval = (speed*255)/100;
+    uint16_t pwmval = (speed*255)/100;
     *Prev = pwmval;
 }
 
