@@ -26,7 +26,7 @@ int main() {
   bridge.init();
   set_loop_ms(5,500);
   uint16_t target = 200; // target rpm
-  double Kp = target*0.06;
+  double Kp = target*0.15;
   P_controller P(Kp);
   double u;
   uint8_t pwm;
@@ -41,15 +41,15 @@ int main() {
   EIMSK |= (1 << INT0);
   sei();
 
-  bridge.rev(5);
+  bridge.rev(200);
 
   while (1) {
 
     if (loop1 == true) {
       loop1 = false;
       u = P.update(target,motor.speed());
-      if ((u > 100.0) || (u < -100.0)) {
-        pwm = 100;
+      if ((u > 254.0) || (u < -254.0)) {
+        pwm = 254;
       } else {
         if (u < 0) {
           pwm = (uint8_t)(-1.0*u);

@@ -20,33 +20,31 @@ Drive::Drive(uint8_t timer_circuit_no, uint8_t sleep_pin) : Pslp(sleep_pin) {
 void Drive::init() {
     Pslp.init();
     if (TN == 0) {
-        DDRD |= (1 << 5) | (1 << 6);
-        TCCR0A = (1 << COM0A1) | (1 << COM0B1) | (1 << WGM01) | (1 << WGM00);
-        TCCR0B = (1 << CS01) | (1 << CS00);
+        DDRD |= (1 << 5) | (1 << 6); // setur pinna d5 & d6 sem output
+        TCCR0A = (1 << COM0A1) | (1 << COM0B1) | (1 << WGM01) | (1 << WGM00); // setur timer X í fast PWM mode
+        TCCR0B = (1 << CS01); // prescaler CS02 CS01 CS00, 001=16MHz/(1*255), 010=16MHz/(8*255), 011=16MHz/(64*255) etc
     } else if (TN == 1) {
         DDRB |= (1 << 1) | (1 << 2); //9&11 eru á B, 1 er D9 & 2 er D10
-        TCCR1A = (1 << COM1A1) | (1 << COM1B1) | (1 << WGM10);
+        TCCR1A = (1 << COM1A1) | (1 << COM1B1) | (1 << WGM10); // setur timer X í fast PWM mode (og 8-bit)
         TCCR1B = (1 << WGM12) | (1 << CS11) | (1 << CS10);
     } else if (TN == 2) {
         DDRD |= (1 << 3); //D3
         DDRB |= (1 << 3); //D11 er 3 á B
         TCCR2A = (1 << COM2A1) | (1 << COM2B1) | (1 << WGM21) | (1 << WGM20);
-        TCCR2B = (1 << CS22);
+        TCCR2B = (1 << CS21) | (1 << CS20);// prescaler CS22 CS21 CS20
     }
     *Pfwd = 0;
     *Prev = 0;
 }
 
-void Drive::fwd(uint16_t speed) {
+void Drive::fwd(uint8_t speed) {
     *Prev = 0;
-    uint16_t pwmval = (speed*255)/100;
-    *Pfwd = pwmval;
+    *Pfwd = speed;
 }
 
-void Drive::rev(uint16_t speed) {
+void Drive::rev(uint8_t speed) {
     *Pfwd = 0;
-    uint16_t pwmval = (speed*255)/100;
-    *Prev = pwmval;
+    *Prev = speed;
 }
 
 void Drive::stop(void) {

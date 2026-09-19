@@ -11,12 +11,12 @@ class Drive {
         volatile uint8_t *CTRLreg;
         uint8_t TN;
         Digital_out Pslp;
-        uint16_t speed;
+        uint8_t speed;
     public:
         Drive(uint8_t TN_arg, uint8_t Pslp_arg);
         void init(void);
-        void fwd(uint16_t speed);
-        void rev(uint16_t speed);
+        void fwd(uint8_t speed);
+        void rev(uint8_t speed);
         void stop(void); // .stop() stoppar snúning
         void sleep(void); // .sleep() stoppar snúning og slekkur á driver/brú
         void wake(void); // .wake() kveikir á driver/brú

@@ -52,7 +52,7 @@ bool Encoder::direction() {
 
 int16_t Encoder::position() {
     cli();
-        int16_t val = ext_counter;
+    int16_t val = ext_counter;
     sei();
     return val;
 }
