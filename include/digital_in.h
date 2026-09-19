@@ -42,6 +42,16 @@ class Digital_in {
                 ddrReg = &DDRD;
                 portReg = &PORTD;
                 pinReg = &PIND;
+                if (pin == 2) { 
+                    EICRA |= (1 << ISC00);
+                    EICRA &= ~(1 << ISC01);
+                    EIMSK |= (1 << INT0);
+                } 
+                else if (pin == 3) {
+                    EICRA |= (1 << ISC10);
+                    EICRA &= ~(1 << ISC11);
+                    EIMSK |= (1 << INT1);
+                }
             } else if (pin >= 8 && pin <= 13) {
                 pinMask = (1 << (pin - 8));
                 ddrReg = &DDRB;
@@ -52,7 +62,8 @@ class Digital_in {
                 ddrReg = &DDRC;
                 portReg = &PORTC;
                 pinReg = &PINC;
-            }   
+            }
+            
         }
 
         void init() {
