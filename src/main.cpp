@@ -15,9 +15,6 @@ Encoder motor(D2,D4,D7);
 
 Drive bridge(0,D8);
 
-double Kp = 2;
-P_controller P(Kp);
-
 ISR(INT0_vect) { 
   motor.update();
 }
@@ -27,9 +24,10 @@ int main() {
   serial_init();
   motor.init(); 
   bridge.init();
-  set_loop_ms(6,500);
-
-  uint16_t target = 75; // target rpm
+  set_loop_ms(5,500);
+  uint16_t target = 200; // target rpm
+  double Kp = target*0.06;
+  P_controller P(Kp);
   double u;
   uint8_t pwm;
   char print_str[64];
@@ -69,7 +67,8 @@ int main() {
     if (loop2 == true) {
       loop2 = false;
       dtostrf(motor.speed(), 8, 3, speed_str);
-      sprintf(print_str,"Target speed: %d    True speed: %s\n",target,speed_str);
+      sprintf(print_str,"Target speed: %d rpm    True speed: %s rpm    PWM: %3d\n",
+        target,speed_str, pwm);
       serial_print(print_str);
     }
   }
