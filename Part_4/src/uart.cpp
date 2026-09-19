@@ -1,7 +1,6 @@
 #include "uart.h"
 #include <avr/io.h>
 
-// Define clock speed and target baud rate (9600 is standard and stable)
 #define F_CPU 16000000UL
 #define BAUD 9600
 #define BRC ((F_CPU / 16 / BAUD) - 1)

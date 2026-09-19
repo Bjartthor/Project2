@@ -8,15 +8,15 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "/home/oli/Desktop/VSCodium_container/Project2_oli_part4/include",
-                "/home/oli/Desktop/VSCodium_container/Project2_oli_part4/src",
+                "/home/oli/Desktop/VSCodium_container/Project2/Part_4/include",
+                "/home/oli/Desktop/VSCodium_container/Project2/Part_4/src",
                 ""
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "/home/oli/Desktop/VSCodium_container/Project2_oli_part4/include",
-                    "/home/oli/Desktop/VSCodium_container/Project2_oli_part4/src",
+                    "/home/oli/Desktop/VSCodium_container/Project2/Part_4/include",
+                    "/home/oli/Desktop/VSCodium_container/Project2/Part_4/src",
                     ""
                 ]
             },

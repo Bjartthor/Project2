@@ -1,7 +1,6 @@
 #include "drive.h"
 #include "digital_out.h"
 #include <avr/io.h>
-#include <stdint.h>
 
 Drive::Drive(uint8_t timer_circuit_no, uint8_t sleep_pin) : Pslp(sleep_pin) {
     TN = timer_circuit_no;

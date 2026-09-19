@@ -96,7 +96,7 @@ int main() {
         }
     }
 
-    // Alternative periodic print
+    // Alternative periodic print, suitable loop2 interval 500ms+
     // if (loop2 == true) {
     //   loop2 = false;
     //   dtostrf(motor.speed(), 7, 3, speed_str);
