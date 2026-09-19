@@ -22,7 +22,7 @@ void Drive::init() {
     if (TN == 0) {
         DDRD |= (1 << 5) | (1 << 6); // setur pinna d5 & d6 sem output
         TCCR0A = (1 << COM0A1) | (1 << COM0B1) | (1 << WGM01) | (1 << WGM00); // setur timer X í fast PWM mode
-        TCCR0B = (1 << CS01); // prescaler CS02 CS01 CS00, 001=16MHz/(1*255), 010=16MHz/(8*255), 011=16MHz/(64*255) etc
+        TCCR0B = (1 << CS01) | (1 << CS00); // (er á 7.8kHz) prescaler CS02 CS01 CS00, 001=16MHz/(1*255), 010=16MHz/(8*255), 011=16MHz/(64*255) etc
     } else if (TN == 1) {
         DDRB |= (1 << 1) | (1 << 2); //9&11 eru á B, 1 er D9 & 2 er D10
         TCCR1A = (1 << COM1A1) | (1 << COM1B1) | (1 << WGM10); // setur timer X í fast PWM mode (og 8-bit)
@@ -31,7 +31,7 @@ void Drive::init() {
         DDRD |= (1 << 3); //D3
         DDRB |= (1 << 3); //D11 er 3 á B
         TCCR2A = (1 << COM2A1) | (1 << COM2B1) | (1 << WGM21) | (1 << WGM20);
-        TCCR2B = (1 << CS21) | (1 << CS20);// prescaler CS22 CS21 CS20
+        TCCR2B = (1 << CS21); // (er á 976Hz) prescaler CS22 CS21 CS20
     }
     *Pfwd = 0;
     *Prev = 0;

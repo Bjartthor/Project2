@@ -20,29 +20,33 @@ void Encoder::init() {
 
 void Encoder::update() {
     bool P1currstate = P1.is_hi();
-    if (P1currstate != P1prevstate) {
-        bool P2currstate = P2.is_hi();
-        if (P1currstate != P2currstate) {
-            counter++;
-            ext_counter++;
-            dir = true;
-        } else {
-            counter--;
-            ext_counter--;
-            dir = false;
+    if (P1currstate == true) {
+        if (P1currstate != P1prevstate) {
+            bool P2currstate = P2.is_hi();
+            if (P1currstate != P2currstate) {
+                counter++;
+                ext_counter++;
+                dir = true;
+            } else {
+                counter--;
+                ext_counter--;
+                dir = false;
+            }
+            P1prevstate = P1currstate;
+
+            history_head++;
+            if (history_head >= history_length) {
+                history_head=0;
+            }
+            enc_memory[history_head].timestamps = time_mus();
+            enc_memory[history_head].counter_mem = counter;
+
+        if (ext_counter >= rev_res || -rev_res >= ext_counter) {
+            ext_counter = 0;
         }
+        }
+    } else {
         P1prevstate = P1currstate;
-
-        history_head++;
-        if (history_head >= history_length) {
-            history_head=0;
-        }
-        enc_memory[history_head].timestamps = time_mus();
-        enc_memory[history_head].counter_mem = counter;
-
-    if (ext_counter >= rev_res || -rev_res >= ext_counter) {
-        ext_counter = 0;
-    }
     }
 }
 

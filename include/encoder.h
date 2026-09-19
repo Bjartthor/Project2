@@ -11,7 +11,7 @@ class Encoder {
         Digital_in P2;
         Digital_out Pout;
         volatile int32_t counter; // bara position nema loopar ekki
-        const int16_t rev_res = 700; // Steps í einum hring á mótor
+        const int16_t rev_res = 1050; // Steps í einum hring á mótor
         volatile int16_t ext_counter; // position sem loopar
         volatile bool P1prevstate;
         volatile bool dir; // true fyrir áfram false fyrir afturábak. Fer samt eftir hvernig maður tengir hvort áttin er hvað
